@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<items burpVersion="2024.1.1">
+  <item>
+    <time>Mon Jan 15 10:00:00 GMT 2024</time>
+    <url>https://example.com/api/v1/users</url>
+    <host>example.com</host>
+    <port>443</port>
+    <protocol>https</protocol>
+    <method>GET</method>
+    <path>/api/v1/users</path>
+    <request base64="false">GET /api/v1/users HTTP/1.1
+Host: example.com
+User-Agent: TestAgent
+
+</request>
+    <response base64="false">HTTP/1.1 200 OK
+Content-Type: application/json
+Server: nginx/1.24.0
+
+{"users": [{"id": 1, "name": "Alice"}]}
+</response>
+    <status>200</status>
+    <responselength>123</responselength>
+    <mimetype>JSON</mimetype>
+  </item>
+  <item>
+    <time>Mon Jan 15 10:01:00 GMT 2024</time>
+    <url>https://example.com/admin</url>
+    <host>example.com</host>
+    <port>443</port>
+    <protocol>https</protocol>
+    <method>GET</method>
+    <path>/admin</path>
+    <request base64="false">GET /admin HTTP/1.1
+Host: example.com
+
+</request>
+    <response base64="false">HTTP/1.1 500 Internal Server Error
+Content-Type: text/html
+
+Traceback (most recent call last):
+  File "/app/admin.py", line 12, in get
+    raise ValueError("fail")
+ValueError: fail
+</response>
+    <status>500</status>
+    <responselength>256</responselength>
+    <mimetype>HTML</mimetype>
+  </item>
+</items>

@@ -1,0 +1,15 @@
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/html; charset=utf-8
+X-Frame-Options: SAMEORIGIN
+Set-Cookie: csrftoken=abc123; Path=/
+
+<!DOCTYPE html>
+<html>
+<head><title>Error</title></head>
+<body>
+<h1>Traceback (most recent call last):</h1>
+  File "/home/app/views.py", line 42, in get
+    result = User.objects.get(id=user_id)
+django.core.exceptions.ObjectDoesNotExist: User matching query does not exist.
+</body>
+</html>

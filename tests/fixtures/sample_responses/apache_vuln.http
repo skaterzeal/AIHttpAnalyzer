@@ -1,0 +1,6 @@
+HTTP/1.1 200 OK
+Content-Type: text/html
+Server: Apache/2.4.49 (Unix)
+X-Powered-By: PHP/8.1.0
+
+<html><body><h1>It works!</h1></body></html>

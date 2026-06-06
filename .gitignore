@@ -1,0 +1,30 @@
+# Go build artifacts
+/httpanalyzer
+/httpanalyzer.exe
+/dist/
+/bin/
+*.exe
+*.test
+*.out
+*.prof
+
+# Go workspace
+go.work
+go.work.sum
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Legacy Python reference (kept for porting, not part of the Go build)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+
+# Local analysis output
+*.sarif
+analysis_results.md
+report.md

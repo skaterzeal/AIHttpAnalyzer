@@ -1,0 +1,59 @@
+patterns:
+  - id: python_traceback
+    name: Python Traceback
+    severity: high
+    regex: "Traceback \\(most recent call last\\):[\\s\\S]*?\\n\\s*[A-Za-z_.]+:\\s*.+"
+    frameworks: ["Django", "Flask", "FastAPI", "Python"]
+    extract_fields:
+      - "file_paths"
+      - "line_numbers"
+      - "exception_type"
+      - "exception_message"
+
+  - id: java_stacktrace
+    name: Java Stack Trace
+    severity: high
+    regex: "(?:java|com|org|net)\\.[a-zA-Z.]+Exception.+(?:\\n\\s+at .+)+"
+    frameworks: ["Spring", "Tomcat", "Java EE"]
+    extract_fields:
+      - "exception_class"
+      - "package_structure"
+      - "line_numbers"
+
+  - id: php_error
+    name: PHP Error / Warning
+    severity: high
+    regex: "(?:Fatal error|Warning|Notice|Parse error):.+in /.+\\.php on line \\d+"
+    frameworks: ["Laravel", "Symfony", "WordPress", "PHP"]
+    extract_fields:
+      - "file_path"
+      - "line_number"
+      - "error_type"
+
+  - id: dotnet_exception
+    name: .NET Exception
+    severity: high
+    regex: "System\\.[A-Za-z.]+Exception:.+(?:\\n   at .+)+"
+    frameworks: [".NET", "ASP.NET", "C#"]
+    extract_fields:
+      - "exception_type"
+      - "namespace_info"
+
+  - id: ruby_stacktrace
+    name: Ruby Stack Trace
+    severity: high
+    regex: "[A-Za-z:]+Error.+(?:\\n\\s+from .+:\\d+:in .+)+"
+    frameworks: ["Rails", "Sinatra", "Ruby"]
+    extract_fields:
+      - "error_type"
+      - "file_paths"
+
+  - id: node_stacktrace
+    name: Node.js Stack Trace
+    severity: high
+    regex: "(?:Error|TypeError|ReferenceError):.+(?:\\n\\s+at .+)+"
+    frameworks: ["Express", "Node.js", "Next.js"]
+    extract_fields:
+      - "error_type"
+      - "file_paths"
+      - "line_numbers"

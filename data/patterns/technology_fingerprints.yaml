@@ -1,0 +1,67 @@
+fingerprints:
+  - name: Django
+    indicators:
+      headers:
+        - name: "x-frame-options"
+          value: "SAMEORIGIN"
+        - name: "set-cookie"
+          pattern: "csrftoken="
+      body:
+        - "django"
+        - "{% csrf_token %}"
+        - "CSRF verification failed"
+    version_from: "body"
+
+  - name: Laravel
+    indicators:
+      headers:
+        - name: "set-cookie"
+          pattern: "laravel_session="
+      body:
+        - "laravel"
+        - "Illuminate\\"
+        - "LARAVEL_SESSION"
+    version_from: "body"
+
+  - name: Spring Boot
+    indicators:
+      headers:
+        - name: "x-application-context"
+          pattern: ".*"
+      body:
+        - "\"timestamp\":"
+        - "\"status\":"
+        - "\"error\":"
+        - "Whitelabel Error Page"
+    version_from: "actuator"
+
+  - name: Express.js
+    indicators:
+      headers:
+        - name: "x-powered-by"
+          value: "Express"
+      body:
+        - "Cannot GET"
+        - "Cannot POST"
+    version_from: "header"
+
+  - name: WordPress
+    indicators:
+      headers: []
+      body:
+        - "wp-content"
+        - "wp-includes"
+        - "wordpress"
+    version_from: "body"
+
+  - name: ASP.NET
+    indicators:
+      headers:
+        - name: "x-powered-by"
+          pattern: "ASP\\.NET"
+        - name: "x-aspnet-version"
+          pattern: ".*"
+      body:
+        - "__VIEWSTATE"
+        - "__EVENTVALIDATION"
+    version_from: "header"

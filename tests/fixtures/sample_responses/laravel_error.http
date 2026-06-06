@@ -1,0 +1,12 @@
+HTTP/1.1 500 Internal Server Error
+Content-Type: text/html; charset=utf-8
+Set-Cookie: laravel_session=xyz789; Path=/; HttpOnly
+
+<!DOCTYPE html>
+<html>
+<head><title>Error</title></head>
+<body>
+<h1>Fatal error: Uncaught Exception: Something went wrong in /var/www/app/Http/Controllers/UserController.php on line 27</h1>
+<p>Illuminate\Foundation\Application</p>
+</body>
+</html>

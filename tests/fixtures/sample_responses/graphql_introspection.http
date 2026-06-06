@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "data": {
+    "__schema": {
+      "queryType": { "name": "Query" },
+      "types": [
+        { "name": "User", "fields": [{"name": "id"}, {"name": "email"}] }
+      ]
+    }
+  }
+}

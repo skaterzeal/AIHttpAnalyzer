@@ -1,0 +1,139 @@
+patterns:
+  # HTTP Headers
+  - id: server_header
+    name: Server Header Version
+    severity: low
+    source: header
+    header_name: "server"
+    regex: "(?:Apache|nginx|IIS|LiteSpeed|Caddy|gunicorn)[/\\s]([0-9.]+)"
+    extract: "version"
+
+  - id: x_powered_by
+    name: X-Powered-By Header
+    severity: medium
+    source: header
+    header_name: "x-powered-by"
+    regex: "(?:PHP|ASP\\.NET|Express)[/\\s]([0-9.]+)"
+    extract: "version"
+
+  - id: x_aspnet_version
+    name: ASP.NET Version Header
+    severity: medium
+    source: header
+    header_name: "x-aspnet-version"
+    regex: "([0-9.]+)"
+    product: "asp.net"
+    extract: "version"
+
+  # Response Body
+  - id: django_version_body
+    name: Django Version in Body
+    severity: high
+    source: body
+    regex: "Django[/\\s]([0-9.]+)"
+    context: "debug_page"
+
+  - id: spring_version
+    name: Spring Boot Version
+    severity: medium
+    source: body
+    regex: "Spring(?:Boot|Framework)[/\\s]([0-9.]+)"
+
+  - id: laravel_version
+    name: Laravel Version
+    severity: medium
+    source: body
+    regex: "laravel[/\\s]v?([0-9.]+)"
+
+  - id: wordpress_version
+    name: WordPress Version
+    severity: medium
+    source: body
+    regex: "WordPress ([0-9.]+)"
+
+  - id: jquery_version
+    name: jQuery Version
+    severity: info
+    source: body
+    regex: "jquery[/\\s-]([0-9.]+)(?:\\.min)?\\.js"
+
+  - id: react_version
+    name: React Version
+    severity: info
+    source: body
+    regex: "react(?:-dom)?[/\\s@]([0-9.]+)"
+
+  # ── servers / frameworks ──────────────────────────────────────────────
+  - id: openssl_header
+    name: OpenSSL Version
+    severity: low
+    source: header
+    header_name: "server"
+    regex: "OpenSSL/([0-9]+\\.[0-9]+\\.[0-9]+[a-z]?)"
+    product: "openssl"
+
+  - id: werkzeug_header
+    name: Werkzeug Version
+    severity: medium
+    source: header
+    header_name: "server"
+    regex: "Werkzeug/([0-9.]+)"
+    product: "werkzeug"
+
+  - id: jenkins_header
+    name: Jenkins Version
+    severity: medium
+    source: header
+    header_name: "x-jenkins"
+    regex: "([0-9.]+)"
+    product: "jenkins"
+
+  - id: tomcat_body
+    name: Apache Tomcat Version
+    severity: medium
+    source: body
+    regex: "Apache Tomcat/([0-9.]+)"
+    product: "tomcat"
+
+  - id: drupal_body
+    name: Drupal Version
+    severity: medium
+    source: body
+    regex: "Drupal[/\\s]([0-9.]+)"
+    product: "drupal"
+
+  - id: joomla_body
+    name: Joomla Version
+    severity: medium
+    source: body
+    regex: "Joomla!?[/\\s]([0-9.]+)"
+    product: "joomla"
+
+  # ── front-end libraries (→ CVE for jquery/bootstrap/lodash) ───────────
+  - id: bootstrap_version
+    name: Bootstrap Version
+    severity: info
+    source: body
+    regex: "bootstrap[/\\s-]v?([0-9.]+)(?:\\.min)?\\.(?:js|css)"
+    product: "bootstrap"
+
+  - id: lodash_version
+    name: Lodash Version
+    severity: info
+    source: body
+    regex: "lodash[@/.\\s-]v?([0-9.]+)(?:\\.min)?\\.js"
+    product: "lodash"
+
+  - id: vue_version
+    name: Vue.js Version
+    severity: info
+    source: body
+    regex: "[Vv]ue(?:\\.js)?[@\\s/v-]([0-9]+\\.[0-9]+\\.[0-9]+)"
+    product: "vue"
+
+  - id: angular_version
+    name: AngularJS Version
+    severity: info
+    source: body
+    regex: "angular(?:js)?[/.\\s-]v?([0-9]+\\.[0-9]+\\.[0-9]+)"
+    product: "angular"

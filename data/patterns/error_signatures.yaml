@@ -1,0 +1,101 @@
+signatures:
+  - id: sql_error_mysql
+    name: MySQL SQL Error
+    severity: high
+    patterns:
+      - "You have an error in your SQL syntax"
+      - "mysql_fetch_array()"
+      - "MySQL server version for the right syntax"
+      - "supplied argument is not a valid MySQL"
+    implication: "SQL injection potansiyel — hata mesajı sözdizimi bilgisi veriyor"
+
+  - id: sql_error_mssql
+    name: MSSQL SQL Error
+    severity: high
+    patterns:
+      - "Unclosed quotation mark after the character string"
+      - "Incorrect syntax near"
+      - "Microsoft OLE DB Provider for SQL Server"
+      - "SqlException"
+    implication: "MSSQL hata mesajı — SQL injection araştır"
+
+  - id: sql_error_oracle
+    name: Oracle SQL Error
+    severity: high
+    patterns:
+      - "ORA-[0-9]{5}"
+      - "Oracle error"
+      - "PLS-[0-9]{5}"
+    implication: "Oracle DB hata kodu — SQL injection araştır"
+
+  - id: sql_error_postgres
+    name: PostgreSQL Error
+    severity: high
+    patterns:
+      - "pg_query()"
+      - "PostgreSQL query failed"
+      - "ERROR:  syntax error at or near"
+      - "PSQLException"
+    implication: "PostgreSQL hata mesajı"
+
+  - id: path_disclosure
+    name: Full Path Disclosure
+    severity: medium
+    patterns:
+      - "/var/www/html/"
+      - "/home/[a-z]+/public_html/"
+      - "C:\\\\inetpub\\\\wwwroot\\\\"
+      - "/usr/local/apache"
+      - "/opt/tomcat"
+    implication: "Sunucu dosya sistemi yolu ifşa — hedefleme için kullanılabilir"
+
+  - id: debug_mode_active
+    name: Debug Mode Active
+    severity: high
+    patterns:
+      - "DEBUG = True"
+      - "debug: true"
+      - "APP_DEBUG=true"
+      - "FLASK_DEBUG=1"
+      - "development mode"
+    implication: "Uygulama debug modunda — detaylı hata bilgisi ifşa"
+
+  - id: spring_actuator
+    name: Spring Boot Actuator Exposed
+    severity: high
+    patterns:
+      - "/actuator/env"
+      - "/actuator/dump"
+      - "/actuator/trace"
+      - "\"activeProfiles\":"
+      - "\"systemEnvironment\":"
+    implication: "Spring Actuator endpoint'leri açık — env değişkenleri, heap dump erişilebilir"
+
+  - id: graphql_introspection
+    name: GraphQL Introspection Enabled
+    severity: medium
+    patterns:
+      - "\"__schema\":"
+      - "\"__types\":"
+      - "\"queryType\":"
+    implication: "GraphQL introspection açık — tüm şema keşfedilebilir"
+
+  - id: swagger_exposed
+    name: Swagger / OpenAPI Exposed
+    severity: medium
+    patterns:
+      - "\"swagger\": \"2.0\""
+      - "\"openapi\": \"3."
+      - "swaggerUi.presets"
+      - "SwaggerUIBundle("
+    implication: "API dokümantasyonu açık — tüm endpoint'ler ve parametreler görünür"
+
+  - id: aws_metadata
+    name: AWS Metadata Leak
+    severity: critical
+    patterns:
+      - "169.254.169.254"
+      - "ec2metadata"
+      - "\"AccessKeyId\":"
+      - "\"SecretAccessKey\":"
+    implication: "AWS meta-data servisine erişim veya credential ifşası"

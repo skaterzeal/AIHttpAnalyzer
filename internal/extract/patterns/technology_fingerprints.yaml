@@ -1,0 +1,164 @@
+fingerprints:
+  - name: Django
+    indicators:
+      headers:
+        - name: "x-frame-options"
+          value: "SAMEORIGIN"
+        - name: "set-cookie"
+          pattern: "csrftoken="
+      body:
+        - "django"
+        - "{% csrf_token %}"
+        - "CSRF verification failed"
+    version_from: "body"
+
+  - name: Laravel
+    indicators:
+      headers:
+        - name: "set-cookie"
+          pattern: "laravel_session="
+      body:
+        - "laravel"
+        - "Illuminate\\"
+        - "LARAVEL_SESSION"
+    version_from: "body"
+
+  - name: Spring Boot
+    indicators:
+      headers:
+        - name: "x-application-context"
+          pattern: ".*"
+      body:
+        - "\"timestamp\":"
+        - "\"status\":"
+        - "\"error\":"
+        - "Whitelabel Error Page"
+    version_from: "actuator"
+
+  - name: Express.js
+    indicators:
+      headers:
+        - name: "x-powered-by"
+          value: "Express"
+      body:
+        - "Cannot GET"
+        - "Cannot POST"
+    version_from: "header"
+
+  - name: WordPress
+    indicators:
+      headers: []
+      body:
+        - "wp-content"
+        - "wp-includes"
+        - "wordpress"
+    version_from: "body"
+
+  - name: ASP.NET
+    indicators:
+      headers:
+        - name: "x-powered-by"
+          pattern: "ASP\\.NET"
+        - name: "x-aspnet-version"
+          pattern: ".*"
+      body:
+        - "__VIEWSTATE"
+        - "__EVENTVALIDATION"
+    version_from: "header"
+
+  - name: Next.js
+    indicators:
+      headers:
+        - name: "x-powered-by"
+          pattern: "Next\\.js"
+      body:
+        - "__NEXT_DATA__"
+        - "/_next/static"
+    version_from: "header"
+
+  - name: Flask
+    indicators:
+      headers:
+        - name: "server"
+          pattern: "Werkzeug"
+      body:
+        - "Werkzeug Debugger"
+        - "flask"
+    version_from: "header"
+
+  - name: Ruby on Rails
+    indicators:
+      headers:
+        - name: "x-runtime"
+          pattern: ".*"
+      body:
+        - "csrf-param"
+        - "ActionController"
+        - "rails-ujs"
+    version_from: "body"
+
+  - name: Drupal
+    indicators:
+      headers:
+        - name: "x-drupal-cache"
+          pattern: ".*"
+        - name: "x-generator"
+          pattern: "Drupal"
+      body:
+        - "Drupal.settings"
+        - "/sites/default/files"
+    version_from: "body"
+
+  - name: Joomla
+    indicators:
+      headers: []
+      body:
+        - "/media/jui/"
+        - "com_content"
+        - "Joomla"
+    version_from: "body"
+
+  - name: Jenkins
+    indicators:
+      headers:
+        - name: "x-jenkins"
+          pattern: ".*"
+      body:
+        - "Jenkins"
+    version_from: "header"
+
+  - name: Magento
+    indicators:
+      headers: []
+      body:
+        - "Mage.Cookies"
+        - "/static/version"
+        - "Magento"
+    version_from: "body"
+
+  - name: Apache Tomcat
+    indicators:
+      headers:
+        - name: "server"
+          pattern: "Apache-Coyote"
+      body:
+        - "Apache Tomcat"
+    version_from: "body"
+
+  - name: Vue.js
+    indicators:
+      headers: []
+      body:
+        - "__vue__"
+        - "data-v-"
+        - "Vue.config"
+    version_from: "body"
+
+  - name: Angular
+    indicators:
+      headers: []
+      body:
+        - "ng-version"
+        - "ng-app"
+        - "ng-controller"
+    version_from: "body"

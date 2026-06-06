@@ -1,0 +1,11 @@
+# Normalize line endings: store LF in the repo, so gofmt/CI stay deterministic
+# regardless of the contributor's OS.
+* text=auto eol=lf
+*.go text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Binary / fixture files that must not be normalized
+*.png binary
+*.jpg binary
+*.gif binary

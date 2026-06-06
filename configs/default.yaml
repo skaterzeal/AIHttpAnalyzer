@@ -1,0 +1,35 @@
+analysis:
+  extract_endpoints: true
+  extract_stack_traces: true
+  extract_versions: true
+  extract_secrets: true
+  extract_errors: true
+  fingerprint_technology: true
+
+ai:
+  enabled: false
+  provider: ollama
+  model: llama3.2
+  temperature: 0.2
+  max_tokens: 2000
+  batch_size: 10              # kaç response'u tek seferde analiz et
+  confidence_threshold: 0.6
+
+output:
+  format: json
+  min_severity: low
+  include_evidence: true
+  max_evidence_length: 500    # snippet maksimum karakter
+
+proxy:
+  port: 8082
+  intercept_responses: true
+  filter_content_types:
+    - "application/json"
+    - "text/html"
+    - "text/plain"
+    - "application/xml"
+
+cache:
+  enabled: true
+  ttl_hours: 48

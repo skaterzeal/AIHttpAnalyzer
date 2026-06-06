@@ -1,0 +1,63 @@
+patterns:
+  # HTTP Headers
+  - id: server_header
+    name: Server Header Version
+    severity: low
+    source: header
+    header_name: "server"
+    regex: "(?:Apache|nginx|IIS|LiteSpeed|Caddy|gunicorn)[/\\s]([0-9.]+)"
+    extract: "version"
+
+  - id: x_powered_by
+    name: X-Powered-By Header
+    severity: medium
+    source: header
+    header_name: "x-powered-by"
+    regex: "(?:PHP|ASP\\.NET|Express)[/\\s]([0-9.]+)"
+    extract: "version"
+
+  - id: x_aspnet_version
+    name: ASP.NET Version Header
+    severity: medium
+    source: header
+    header_name: "x-aspnet-version"
+    regex: "([0-9.]+)"
+    extract: "version"
+
+  # Response Body
+  - id: django_version_body
+    name: Django Version in Body
+    severity: high
+    source: body
+    regex: "Django[/\\s]([0-9.]+)"
+    context: "debug_page"
+
+  - id: spring_version
+    name: Spring Boot Version
+    severity: medium
+    source: body
+    regex: "Spring(?:Boot|Framework)[/\\s]([0-9.]+)"
+
+  - id: laravel_version
+    name: Laravel Version
+    severity: medium
+    source: body
+    regex: "laravel[/\\s]v?([0-9.]+)"
+
+  - id: wordpress_version
+    name: WordPress Version
+    severity: medium
+    source: body
+    regex: "WordPress ([0-9.]+)"
+
+  - id: jquery_version
+    name: jQuery Version
+    severity: info
+    source: body
+    regex: "jquery[/\\s-]([0-9.]+)(?:\\.min)?\\.js"
+
+  - id: react_version
+    name: React Version
+    severity: info
+    source: body
+    regex: "react(?:-dom)?[/\\s@]([0-9.]+)"
