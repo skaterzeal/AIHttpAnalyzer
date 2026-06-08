@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"io"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/elazarl/goproxy"
 
+	"github.com/skaterzeal/AIHttpAnalyzer/internal/ai"
 	"github.com/skaterzeal/AIHttpAnalyzer/internal/extract"
 	"github.com/skaterzeal/AIHttpAnalyzer/internal/output"
 	"github.com/skaterzeal/AIHttpAnalyzer/pkg/asset"
@@ -32,6 +34,12 @@ type Options struct {
 	Out         io.Writer
 	MinSeverity asset.Severity
 	Verbose     bool
+
+	// Triager, when set, enables advisory AI triage. It runs ASYNCHRONOUSLY so it
+	// never blocks the live traffic path; results are emitted as ai_triage records
+	// once the model responds. AIConcurrency bounds in-flight LLM calls.
+	Triager       *ai.Triager
+	AIConcurrency int
 }
 
 // Run starts the MITM proxy on opts.Addr and blocks until interrupted.
@@ -55,6 +63,12 @@ func Serve(ln net.Listener, opts Options) error {
 	p.Verbose = opts.Verbose
 	p.OnRequest().HandleConnect(goproxy.AlwaysMitm)
 
+	aiConc := opts.AIConcurrency
+	if aiConc < 1 {
+		aiConc = 4
+	}
+	aiSem := make(chan struct{}, aiConc)
+
 	var mu sync.Mutex
 	p.OnResponse().DoFunc(func(resp *http.Response, ctx *goproxy.ProxyCtx) *http.Response {
 		if resp == nil {
@@ -77,6 +91,25 @@ func Serve(ln net.Listener, opts Options) error {
 			mu.Lock()
 			_ = output.WriteJSONL(opts.Out, []asset.AnalyzedResponse{ar}, opts.MinSeverity)
 			mu.Unlock()
+		}
+
+		// AI triage runs off the hot path so live traffic is never blocked. If all
+		// AI workers are busy we skip triage for this response rather than queue.
+		if opts.Triager != nil && len(ar.Findings) > 0 {
+			select {
+			case aiSem <- struct{}{}:
+				go func(ar asset.AnalyzedResponse) {
+					defer func() { <-aiSem }()
+					t, err := opts.Triager.Triage(context.Background(), ar, "")
+					if err != nil {
+						return
+					}
+					mu.Lock()
+					_ = output.WriteAIRecord(opts.Out, ar.Response.AssetID(), t)
+					mu.Unlock()
+				}(ar)
+			default:
+			}
 		}
 		return resp
 	})

@@ -7,6 +7,11 @@ live target list piped from your recon tools — and returns a **deduplicated,
 CVE-correlated, AI-prioritized** view of the attack surface. It is a single
 static Go binary that pipes cleanly into the rest of your workflow.
 
+> [!NOTE]
+> **Language & Migration Status:** The project has been fully migrated to Go (implemented in `cmd/httpanalyzer` and `internal/`). The legacy Python prototype files are located in the `legacy/` directory.
+>
+> **Configuration Note:** The Go version is configured exclusively via command-line flags and environment variables. The legacy `configs/default.yaml` file from the Python prototype is not read by the Go application.
+
 It does not try to out-detect `nuclei` or `TruffleHog` at any single task. It
 wins where no single tool helps you: **triage + trust + integration.**
 
@@ -54,7 +59,7 @@ httpanalyzer analyze --dir ./responses -o markdown --min-severity high
 # Pipe live targets in (host or URL per line, or JSONL assets from DNSRecon)
 cat hosts.txt | httpanalyzer analyze --stdin -o jsonl
 
-# Fetch and analyze one URL
+# Fetch and analyze one URL (deterministic)
 httpanalyzer request https://example.com/api -H "Authorization: Bearer x"
 
 # Build a cross-asset attack surface map
@@ -63,15 +68,25 @@ httpanalyzer map --burp export.xml -o markdown
 # Live MITM proxy — point your browser/Burp at it, findings stream as JSONL
 httpanalyzer proxy --addr 127.0.0.1:8080
 
+# Note: The MITM proxy generates a unique root Certificate Authority (CA) on first run.
+# You must trust this cert in your browser or Burp Suite to intercept HTTPS traffic.
+# The cert is saved to:
+#   - Windows: %APPDATA%\httpanalyzer\ca-cert.pem
+#   - Linux: ~/.config/httpanalyzer/ca-cert.pem
+#   - macOS: ~/Library/Application Support/httpanalyzer/ca-cert.pem
+
 # Full ecosystem pipe: DNS recon → live HTTP triage
 dns-recon-ai scan -t example.com -o jsonl | httpanalyzer analyze --stdin -o jsonl
 
 # Ship your own community pattern packs / CVE database (no rebuild)
 httpanalyzer analyze --burp export.xml --patterns ./packs --cve-db ./cve.json
 
-# Add advisory AI triage (local Ollama by default; severities are NOT changed)
+# Add advisory AI triage (local Ollama by default; severities are NOT changed).
 httpanalyzer analyze --burp export.xml --ai
 httpanalyzer analyze --burp export.xml --ai --llm-provider anthropic --api-key $KEY
+
+# Note: Local AI triage (--llm-provider ollama) requires Ollama running on
+# http://localhost:11434 and the default model pulled: `ollama pull llama3.2`
 ```
 
 ### Output formats

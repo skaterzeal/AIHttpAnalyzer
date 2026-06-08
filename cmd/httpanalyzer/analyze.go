@@ -19,21 +19,22 @@ import (
 
 // analyzeOptions holds the resolved flags for the analyze command.
 type analyzeOptions struct {
-	file        string
-	burp        string
-	dir         string
-	stdin       bool
-	output      string
-	outputFile  string
-	minSeverity string
-	concurrency int
-	timeout     int
-	ai          bool
-	llmProvider string
-	model       string
-	apiKey      string
-	patternsDir string
-	cveDB       string
+	file          string
+	burp          string
+	dir           string
+	stdin         bool
+	output        string
+	outputFile    string
+	minSeverity   string
+	concurrency   int
+	timeout       int
+	ai            bool
+	llmProvider   string
+	model         string
+	apiKey        string
+	aiConcurrency int
+	patternsDir   string
+	cveDB         string
 }
 
 func newAnalyzeCmd() *cobra.Command {
@@ -59,6 +60,7 @@ func newAnalyzeCmd() *cobra.Command {
 	f.StringVar(&opts.llmProvider, "llm-provider", "ollama", "LLM provider: ollama|openai|anthropic")
 	f.StringVar(&opts.model, "model", "", "LLM model (provider default if empty)")
 	f.StringVar(&opts.apiKey, "api-key", "", "LLM API key (or set via env in your shell)")
+	f.IntVar(&opts.aiConcurrency, "ai-concurrency", 5, "max concurrent LLM requests during AI triage")
 	f.StringVar(&opts.patternsDir, "patterns", "", "external pattern pack directory (overrides embedded packs)")
 	f.StringVar(&opts.cveDB, "cve-db", "", "external CVE database JSON file (overrides embedded DB)")
 	return cmd
@@ -100,8 +102,10 @@ func runAnalyze(opts *analyzeOptions) error {
 	return writeOutput(opts, results, minSev)
 }
 
-// runAITriage adds advisory AI triage to each result. Failures on individual
-// responses are logged and skipped so the deterministic report always succeeds.
+// runAITriage adds advisory AI triage to results concurrently. Individual
+// failures leave that result's triage empty; only a total failure (e.g. the LLM
+// is unreachable) is surfaced as a warning, so the deterministic report always
+// succeeds.
 func runAITriage(opts *analyzeOptions, results []asset.AnalyzedResponse) error {
 	provider, err := ai.NewProvider(ai.Config{
 		Provider: opts.llmProvider,
@@ -112,14 +116,11 @@ func runAITriage(opts *analyzeOptions, results []asset.AnalyzedResponse) error {
 		return err
 	}
 	triager := ai.NewTriager(provider)
-	ctx := context.Background()
-	for i := range results {
-		tr, err := triager.Triage(ctx, results[i])
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "ai triage failed for %s: %v\n", results[i].Response.AssetID(), err)
-			continue
-		}
-		results[i].AITriage = tr
+	ok, firstErr := triager.TriageBatch(context.Background(), results, opts.aiConcurrency)
+	if ok == 0 && firstErr != nil {
+		fmt.Fprintf(os.Stderr, "ai triage failed: %v\n", firstErr)
+	} else if firstErr != nil {
+		fmt.Fprintf(os.Stderr, "ai triage: %d/%d succeeded (%v)\n", ok, len(results), firstErr)
 	}
 	return nil
 }

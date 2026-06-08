@@ -33,5 +33,6 @@ func newRootCmd() *cobra.Command {
 	root.AddCommand(newRequestCmd())
 	root.AddCommand(newMapCmd())
 	root.AddCommand(newProxyCmd())
+	root.AddCommand(newAskCmd())
 	return root
 }

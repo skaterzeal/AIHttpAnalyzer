@@ -22,6 +22,7 @@ func newProxyCmd() *cobra.Command {
 		patternsDir string
 		cveDB       string
 		verbose     bool
+		aiOpts      aiFlags
 	)
 	cmd := &cobra.Command{
 		Use:   "proxy",
@@ -55,15 +56,26 @@ func newProxyCmd() *cobra.Command {
 				out = f
 			}
 
-			fmt.Fprintf(os.Stderr, "proxy listening on %s (CA: %s)\n", addr, caCert)
-			return proxy.Run(proxy.Options{
+			opts := proxy.Options{
 				Addr:        addr,
 				Engine:      engine,
 				CA:          ca,
 				Out:         out,
 				MinSeverity: asset.ParseSeverity(minSeverity),
 				Verbose:     verbose,
-			})
+			}
+			if aiOpts.enabled {
+				tr, err := aiOpts.triager()
+				if err != nil {
+					return err
+				}
+				opts.Triager = tr
+				opts.AIConcurrency = aiOpts.concurrency
+				fmt.Fprintln(os.Stderr, "AI triage enabled (async; runs off the live-traffic path)")
+			}
+
+			fmt.Fprintf(os.Stderr, "proxy listening on %s (CA: %s)\n", addr, caCert)
+			return proxy.Run(opts)
 		},
 	}
 	f := cmd.Flags()
@@ -75,5 +87,6 @@ func newProxyCmd() *cobra.Command {
 	f.StringVar(&patternsDir, "patterns", "", "external pattern pack directory")
 	f.StringVar(&cveDB, "cve-db", "", "external CVE database JSON file")
 	f.BoolVar(&verbose, "verbose", false, "verbose proxy logging")
+	aiOpts.register(cmd, true)
 	return cmd
 }

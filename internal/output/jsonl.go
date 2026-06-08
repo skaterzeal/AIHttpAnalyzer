@@ -53,6 +53,13 @@ func WriteJSONL(w io.Writer, results []asset.AnalyzedResponse, min asset.Severit
 	return nil
 }
 
+// WriteAIRecord writes a single advisory ai_triage JSONL record. Used by the
+// live proxy, which produces triage asynchronously after the deterministic
+// findings have already been streamed.
+func WriteAIRecord(w io.Writer, assetID string, tr *asset.AITriage) error {
+	return json.NewEncoder(w).Encode(aiRecord{Asset: assetID, Kind: "ai_triage", Triage: tr})
+}
+
 // assetID returns the response's asset identifier for output records.
 func assetID(ar asset.AnalyzedResponse) string {
 	if ar.Response != nil {

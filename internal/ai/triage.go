@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"sync"
 
 	"github.com/skaterzeal/AIHttpAnalyzer/pkg/asset"
 )
@@ -16,12 +17,14 @@ type Triager struct {
 // NewTriager wraps a provider.
 func NewTriager(p Provider) *Triager { return &Triager{provider: p} }
 
-// Triage produces advisory triage for one analyzed response. It NEVER mutates
-// findings or severities — it only returns an AITriage. Injection detection runs
-// regardless of the model's output, so a manipulated body is always flagged.
-func (t *Triager) Triage(ctx context.Context, ar asset.AnalyzedResponse) (*asset.AITriage, error) {
+// Triage produces advisory triage for one analyzed response. An optional
+// operator question focuses the analysis (used by the `ask` command). It NEVER
+// mutates findings or severities — it only returns an AITriage. Injection
+// detection runs regardless of the model's output, so a manipulated body is
+// always flagged.
+func (t *Triager) Triage(ctx context.Context, ar asset.AnalyzedResponse, question string) (*asset.AITriage, error) {
 	injection := DetectInjection(ar.Response.Body)
-	prompt := buildPrompt(ar, injection)
+	prompt := buildPrompt(ar, injection, question)
 
 	raw, err := t.provider.Complete(ctx, prompt)
 	if err != nil {
@@ -33,6 +36,57 @@ func (t *Triager) Triage(ctx context.Context, ar asset.AnalyzedResponse) (*asset
 	// Operator-side detection wins: merge any model-reported injection with ours.
 	parsed.InjectionDetected = mergeUnique(injection, parsed.InjectionDetected)
 	return parsed, nil
+}
+
+// TriageBatch fills in AITriage for every result concurrently, bounded by
+// concurrency. LLM calls are network-latency dominated, so a worker pool turns a
+// long sequential wait into a parallel one. Failures leave that result's triage
+// nil; it returns how many succeeded and the first error seen (for the caller to
+// surface a single warning) so the deterministic report is never blocked.
+func (t *Triager) TriageBatch(ctx context.Context, results []asset.AnalyzedResponse, concurrency int) (succeeded int, firstErr error) {
+	if concurrency < 1 {
+		concurrency = 1
+	}
+	var (
+		mu   sync.Mutex
+		wg   sync.WaitGroup
+		jobs = make(chan int)
+	)
+	worker := func() {
+		defer wg.Done()
+		for i := range jobs {
+			tr, err := t.Triage(ctx, results[i], "")
+			mu.Lock()
+			if err != nil {
+				if firstErr == nil {
+					firstErr = err
+				}
+			} else {
+				results[i].AITriage = tr
+				succeeded++
+			}
+			mu.Unlock()
+		}
+	}
+	for w := 0; w < concurrency; w++ {
+		wg.Add(1)
+		go worker()
+	}
+	for i := range results {
+		if results[i].Response == nil {
+			continue
+		}
+		select {
+		case <-ctx.Done():
+			close(jobs)
+			wg.Wait()
+			return succeeded, ctx.Err()
+		case jobs <- i:
+		}
+	}
+	close(jobs)
+	wg.Wait()
+	return succeeded, firstErr
 }
 
 type rawTriage struct {
